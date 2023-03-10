@@ -287,48 +287,33 @@ document.addEventListener('DOMContentLoaded', () => {
             //Записываем данные в новый обьект которые приходят с формы
             const formData = new FormData(form);    
             
-            //Метод как записать в данные с инпутов в JSON
-            // const object = {};
+            // Метод как записать в данные с инпутов в JSON
+            const object = {};
 
-            // formData.forEach((e , i) => {
-            //     object[i] = e;
-            // });
+            formData.forEach((e , i) => {
+                object[i] = e;
+            });
 
-            // const json = JSON.stringify(object);
-
-            fetch('server.php', {
+            fetch('server1.php', {
                 method: 'POST',
                 headers: {
                     'Content-type': 'aplication/json'
                 },
-                body: FormData
-            }).then(data => {
+                body: JSON.stringify(object)
+            }).then(data => data.text())
+            .then(data => {
                 console.log(data);
                 showThanksModal(message.succses);
-                form.reset();
+                // form.reset();
                 statusMessage.remove();
-            }).then()
+            }).catch(() => {
+                showThanksModal(message.failure);
+            }).finally(() => {
+                form.reset();
+            })
             
-            request.send(json);
+            // request.send(json);
 
-
-
-            //Обработчик события когда делаем запрос на сервер и убираем оповещение через 2 секунды
-
-            // request.addEventListener('load', () => {
-            //     if (request.status === 200) {
-                    // console.log(request.response);
-                    // showThanksModal(message.succses);
-                    // form.reset();
-
-                    
-                    // statusMessage.remove();
-                    
-            //     } else {
-            //         showThanksModal(message.failure);
-
-            //     }
-            // });
 
 
         })
@@ -363,37 +348,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 
-    // fetch('https://jsonplaceholder.typicode.com/posts', {
-    //     method: 'POST',
-    //     body: JSON.stringify({name: 'Alex'}),
-    //     headers: {
-    //         'Content-type' : 'application'
-    //     }
-    // })
-    //   .then(response => response.json())
-    //   .then(json => console.log(json))
-
-
-    const req  = new Promise( (resolve, reject) => {
-        setTimeout(() => {
-
-            console.log('Подготовка данных...');
-
-            const product = {
-                name: 'TV',
-                price: 2000
-            };
-
-            setTimeout(() => {
-                product.status = 'order';
-                console.log(product);
-            }, 2000);
-
-        }, 2000);
-    });
-      
-
-    
 
 })
 
