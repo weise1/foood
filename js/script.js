@@ -217,36 +217,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    new MenuCard(
-        'img/slider/olive-oil.jpg',
-        'img',
-        'Меню “Постное”',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        10,
-        '.menu .container',
-        'menu__item',
-        'big'
-    ).render();
+    // new MenuCard(
+    //     'img/slider/olive-oil.jpg',
+    //     'img',
+    //     'Меню “Постное”',
+    //     'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
+    //     10,
+    //     '.menu .container',
+    //     'menu__item',
+    //     'big'
+    // ).render();
 
-    new MenuCard(
-        'img/slider/food-12.jpg',
-        'img',
-        'Меню “Премиум”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-        8,
-        '.menu .container',
-        'menu__item'
-    ).render();
+    // new MenuCard(
+    //     'img/slider/food-12.jpg',
+    //     'img',
+    //     'Меню “Премиум”',
+    //     'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
+    //     8,
+    //     '.menu .container',
+    //     'menu__item'
+    // ).render();
 
-    new MenuCard(
-        'img/slider/paprika.jpg',
-        'img',
-        'Меню “Фитнес”',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        12,
-        '.menu .container',
-        'menu__item'
-    ).render();
+    // new MenuCard(
+    //     'img/slider/paprika.jpg',
+    //     'img',
+    //     'Меню “Фитнес”',
+    //     'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
+    //     12,
+    //     '.menu .container',
+    //     'menu__item'
+    // ).render();
 
     //Forms
 
@@ -260,11 +260,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Перебор всех инпутов и присвоение им скрипта для отправки на сервер
     forms.forEach(item => {
-        postData(item);
-    })
+        bindPostData(item);
+    });
+
+    const PostData = async (url, data) => {          //Пример запроса вынесен в отдельную переменную
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'   
+            },
+            body: data
+
+        });
+
+        return await res.json();
+    };
+
+    const getData = async (url) => {
+        const res = await fetch(url);
+
+        if(!res.ok) {
+            throw new Error(`Could not fetch ${url}, status ${res.status}`);
+        }
+
+        return await res.json();
+    };
+
+    getData('http://localhost:3000/menu')
+    .then(data => {
+        data.forEach(({img, altimg, title, descr, price}) => {
+            new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+        }); 
+    });
 
     //Отправка данных на сервер через JSON/ и просто формдату
-    function postData(form) {
+    function bindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -286,21 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             //Записываем данные в новый обьект которые приходят с формы
             const formData = new FormData(form);    
+
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
             
             // Метод как записать в данные с инпутов в JSON
-            const object = {};
+            // const object = {};
 
-            formData.forEach((e , i) => {
-                object[i] = e;
-            });
+            // formData.forEach((e , i) => {
+            //     object[i] = e;
+            // });
 
-            fetch('server1.php', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'aplication/json'
-                },
-                body: JSON.stringify(object)
-            }).then(data => data.text())
+
+            PostData('http://localhost:3000/requests', json)
             .then(data => {
                 console.log(data);
                 showThanksModal(message.succses);
@@ -347,6 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }, 5000);
     }
+
+    // fetch('http://localhost:3000/menu')
+    //     .then(data => data.json())
+    //     .then(res => console.log(res));
 
 
 })
