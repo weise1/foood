@@ -217,36 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // new MenuCard(
-    //     'img/slider/olive-oil.jpg',
-    //     'img',
-    //     'Меню “Постное”',
-    //     'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-    //     10,
-    //     '.menu .container',
-    //     'menu__item',
-    //     'big'
-    // ).render();
-
-    // new MenuCard(
-    //     'img/slider/food-12.jpg',
-    //     'img',
-    //     'Меню “Премиум”',
-    //     'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-    //     8,
-    //     '.menu .container',
-    //     'menu__item'
-    // ).render();
-
-    // new MenuCard(
-    //     'img/slider/paprika.jpg',
-    //     'img',
-    //     'Меню “Фитнес”',
-    //     'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-    //     12,
-    //     '.menu .container',
-    //     'menu__item'
-    // ).render();
+    // axios.get('http://localhost:3000/menu')
+    // .then(response => console.log(response));
 
     //Forms
 
@@ -276,22 +248,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return await res.json();
     };
 
-    const getData = async (url) => {
-        const res = await fetch(url);
-
-        if(!res.ok) {
-            throw new Error(`Could not fetch ${url}, status ${res.status}`);
-        }
-
-        return await res.json();
-    };
-
-    getData('http://localhost:3000/menu')
+    axios.get('http://localhost:3000/menu')
     .then(data => {
-        data.forEach(({img, altimg, title, descr, price}) => {
+        data.data.forEach(({img, altimg, title, descr, price}) => {
             new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
         }); 
     });
+
 
     //Отправка данных на сервер через JSON/ и просто формдату
     function bindPostData(form) {
@@ -375,9 +338,156 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 
-    // fetch('http://localhost:3000/menu')
-    //     .then(data => data.json())
-    //     .then(res => console.log(res));
+    //Slider
+
+    const slides = document.querySelectorAll('.offer__slide'),
+          slider = document.querySelector('.offer__slider'),
+          pervius = document.querySelector('.offer__slider-prev'),
+          next = document.querySelector('.offer__slider-next'),
+          total = document.querySelector('#total'),
+          current = document.querySelector('#current'),
+          slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+          sliderFild = document.querySelector('.offer__slider-inner'),
+          width = window.getComputedStyle(slidesWrapper).width;
+
+
+    let slideIndex = 1;
+
+    let offset = 0;
+
+    
+    if (slides.length < 10) {
+        total.textContent = `0${slides.length}`;
+        current.textContent = `0${slideIndex}`;
+    } else {
+        total.textContent = `${slides.length}`;
+        current.textContent = slideIndex;
+
+    }
+
+    sliderFild.style.width = 100 * slides.length + '%';
+
+    sliderFild.style.display = 'flex';
+    sliderFild.style.transition = '0.5s all';
+
+
+    slidesWrapper.style.overflow = 'hidden';
+
+
+    slides.forEach(slide => {
+        slide.style.width = width;
+    });
+
+    slider.style.position = 'relative';
+
+    const indicators = document.createElement('ol'),
+          dots = [];
+    indicators.classList.add('carousel-indicators');
+    slider.append(indicators);
+
+
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement('li');
+        dot.setAttribute('data-slide-to', i + 1);
+        
+
+        if ( i == 0) {
+            dot.style.opacity = 1;
+        }
+
+        indicators.append(dot);
+        dots.push(dot);
+    }
+
+    next.addEventListener('click', () => {
+        
+        if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
+            offset = 0;
+        } else {
+            offset += +width.slice(0, width.length - 2);
+        }
+
+
+        sliderFild.style.transform = `translateX(-${offset}px)`;
+
+        if ( slideIndex == slides.length) {
+            slideIndex = 1;
+        } else {
+            slideIndex++;
+        }
+
+
+        if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`;
+        } else {
+            current.textContent = slideIndex;
+        }
+
+
+        dots.forEach(item => item.style.opacity = '.5');
+        dots[slideIndex - 1].style.opacity = 1;
+    });
+
+
+    pervius.addEventListener('click', () => {
+
+        
+        if (offset == 0) {
+            offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+        } else {
+            offset -= +width.slice(0, width.length - 2);
+        }
+
+
+        sliderFild.style.transform = `translateX(-${offset}px)`;
+
+        if ( slideIndex == 1) {
+            slideIndex = slides.length;
+        } else {
+            slideIndex--;
+        }
+
+
+        if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`;
+        } else {
+            current.textContent = slideIndex;
+        }
+
+        dots.forEach(item => item.style.opacity = '.5');
+        dots[slideIndex - 1].style.opacity = 1;
+    });
+
+    //Slider dot
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            const slideTo = e.target.getAttribute('data-slide-to');
+            
+
+            slideIndex = slideTo;
+            offset = +width.slice(0, width.length - 2) * (slideTo - 1);
+
+            sliderFild.style.transform = `translateX(-${offset}px)`;
+
+
+            dots.forEach(item => item.style.opacity = '.5');
+            dots[slideIndex - 1].style.opacity = 1;
+
+            
+
+            if (slides.length < 10) {
+                current.textContent = `0${slideIndex}`;
+            } else {
+                current.textContent = slideIndex;
+            }
+
+        });
+    })
+
+
+
+
 
 
 })
